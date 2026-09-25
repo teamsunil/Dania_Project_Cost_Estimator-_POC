@@ -46,10 +46,9 @@ a{color:inherit}
 .bar{background:linear-gradient(95deg,var(--indigo) 0%,var(--plum-2) 55%,var(--plum) 100%);color:#fff}
 .bar-inner{max-width:1080px;margin:0 auto;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .logo{display:inline-block;border:3px solid var(--lilac);background:#471565;color:#fff;font-weight:500;font-size:30px;letter-spacing:.07em;padding:2px 20px 0;line-height:1.35;text-decoration:none}
-.views{display:flex;gap:4px;background:rgba(255,255,255,.1);padding:4px;border-radius:999px}
-.views button{font:inherit;font-size:15px;color:#fff;background:transparent;border:0;padding:8px 16px;border-radius:999px;cursor:pointer}
-.views button[aria-pressed="true"]{background:#fff;color:var(--plum)}
 
+.nav-cta{font-size:15px;font-weight:500;color:var(--plum);background:#fff;padding:9px 18px;border-radius:999px;text-decoration:none}
+.nav-cta:hover{background:var(--lilac-soft)}
 /* Layout */
 main{max-width:1080px;margin:0 auto;padding:40px 24px 64px}
 .intro{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:end;margin-bottom:36px}
@@ -162,24 +161,6 @@ ol.next{padding-left:1.3em;margin:0}
 ol.next li{margin-bottom:10px}
 ol.next li strong{font-weight:600}
 
-/* Team view */
-.admin-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
-.admin-head h1{font-size:36px}
-.admin-head p{color:var(--muted);margin:0}
-.stats{display:flex;gap:24px;margin:0 0 20px;flex-wrap:wrap;color:var(--muted);font-size:15px}
-.stats b{color:var(--ink);font-size:22px;font-weight:600;display:block}
-.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
-table.leads{width:100%;border-collapse:collapse;font-size:15px;min-width:760px}
-table.leads th{text-align:left;font-weight:500;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line)}
-table.leads td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
-table.leads tr.row{cursor:pointer}
-table.leads tr.row:hover td{background:var(--soft)}
-table.leads tr.detail td{background:var(--bg)}
-table.leads select{padding:6px 8px;font-size:14px;width:auto}
-.tag{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--soft)}
-.tag.com{background:var(--plum);color:#fff}
-.empty{padding:48px 24px;text-align:center}
-.empty p{color:var(--muted)}
 footer{max-width:1080px;margin:0 auto;padding:0 24px 40px;color:var(--muted);font-size:14px}
 
 @media (max-width:780px){
@@ -200,10 +181,7 @@ footer{max-width:1080px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
 <header class="bar">
   <div class="bar-inner">
     <a class="logo" href="https://daniaconstruction.com/" aria-label="Dania Construction home">DANIA</a>
-    <div class="views" role="group" aria-label="Switch view">
-      <button type="button" id="viewCustomer" aria-pressed="true">Get an estimate</button>
-      <button type="button" id="viewAdmin" aria-pressed="false">Team view</button>
-    </div>
+    <a class="nav-cta" href="#customer">Get an estimate</a>
   </div>
 </header>
 
@@ -438,24 +416,9 @@ footer{max-width:1080px;margin:0 auto;padding:0 24px 40px;color:var(--muted);fon
   </div>
 </section>
 
-<!-- ============ TEAM VIEW ============ -->
-<section id="admin" hidden>
-  <div class="admin-head">
-    <div>
-      <h1>Enquiries</h1>
-      <p>Every estimate and quote request lands here with the details the team needs.</p>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn ghost" id="loadSamples">Load sample enquiries</button>
-      <button class="btn ghost" id="clearAll">Clear demo data</button>
-    </div>
-  </div>
-  <div class="stats" id="stats"></div>
-  <div class="table-wrap" id="leadsWrap"></div>
-</section>
 </main>
 
-<footer>Proof of concept prepared for Dania Construction. Rates, service area, response times and wording are placeholders for Dania to confirm. In this demo, enquiries are saved only in your browser and no emails are sent.</footer>
+<footer>Proof of concept prepared for Dania Construction. Rates, service area, response times and wording are placeholders for Dania to confirm. In this demo, no enquiries are stored and no emails are sent.</footer>
 
 <script>
 (function(){
@@ -501,11 +464,8 @@ let state;
 function resetState(){state={flow:null,step:0,files:{domestic:[],commercial:[]},est:null,emailLeadRef:null}}
 resetState();
 
-/* ---------- Storage (per browser, demo only) ---------- */
-const KEY='dania-enquiries-v1';
-function loadLeads(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):[]}catch(e){return []}}
-function saveLeads(l){try{localStorage.setItem(KEY,JSON.stringify(l))}catch(e){}}
-function addLead(lead){const l=loadLeads();l.unshift(lead);saveLeads(l)}
+/* ---------- Submission hook: connect to backend/email in live version ---------- */
+function submitLead(lead){console.log('Enquiry',lead)}
 
 /* ---------- Helpers ---------- */
 const gbp=n=>'£'+Math.round(n).toLocaleString('en-GB');
@@ -691,7 +651,7 @@ $('#sendEstimate').addEventListener('click',()=>{
   if(!emailOk(v)){setErr(fieldOf('estEmail'),'Enter an email address like name@example.com.');return}
   setErr(fieldOf('estEmail'),'');
   const ref=makeRef(); state.emailLeadRef=ref;
-  addLead({ref,type:'domestic',stage:'Estimate emailed',status:'New',date:new Date().toISOString(),name:'',email:v,phone:'',pref:'Email',
+  submitLead({ref,type:'domestic',stage:'Estimate emailed',status:'New',date:new Date().toISOString(),name:'',email:v,phone:'',pref:'Email',
     service:state.est.service,summary:state.est.desc,estimate:[state.est.lo,state.est.hi],postcode:state.est.postcode,timeline:state.est.timeline,files:state.est.files,notes:''});
   $('#emailInline').classList.remove('open');$('#openEmail').hidden=true;
   $('#emailSent').innerHTML=`<div class="note ok">Estimate sent to ${esc(v)}. It's valid for 30 days, and you can request a detailed quote any time using reference ${ref}.</div>`;
@@ -707,7 +667,7 @@ const after={
       name:$('#d-name').value.trim(),company:$('#d-company').value.trim(),email:$('#d-email').value.trim(),phone:$('#d-phone').value.trim(),
       pref:document.querySelector('input[name=d-pref]:checked').value,bestTime:$('#d-time').value,
       service:e.service,summary:e.desc,estimate:[e.lo,e.hi],postcode:e.postcode,timeline:e.timeline,files:e.files,notes:$('#d-notes').value.trim()};
-    const l=loadLeads().filter(x=>x.ref!==ref);l.unshift(lead);saveLeads(l);
+    submitLead(lead);
     renderDone(lead,[['Project',e.service],['Details',e.desc],['Site',e.postcode],['Start',e.timeline],['Indicative estimate',`${gbp(e.lo)} to ${gbp(e.hi)}`],['Files',e.files.length?e.files.length+' attached':'None'],['Contact by',lead.pref+(lead.bestTime?', '+lead.bestTime.toLowerCase():'')]],
       ['<strong>Review.</strong> Our team checks your details and photos within two working days, and gets in touch if anything is unclear.',
        `<strong>Site survey, if needed.</strong> We'll arrange a free visit to check levels, drainage and access.${e.key==='kerb'?' We can also help with your council application.':''}`,
@@ -721,7 +681,7 @@ const after={
       pref:document.querySelector('input[name=c-pref]:checked').value,
       service:works.join(', '),summary:$('#c-projectName').value.trim(),estimate:null,postcode:$('#c-postcode').value.trim().toUpperCase(),
       value:$('#c-value').value,start:$('#c-start').value,tenderReturn:$('#c-return').value,files:state.files.commercial.map(f=>f.name),notes:$('#c-scope').value.trim()};
-    addLead(lead);
+    submitLead(lead);
     const fmtDate=d=>d?new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'Not given';
     const fmtMonth=m=>m?new Date(m+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'Not given';
     renderDone(lead,[['Company',lead.company],['Project',lead.summary],['Works',lead.service],['Site',lead.postcode],['Package value',lead.value||'Not given'],['Expected start',fmtMonth(lead.start)],['Tender return',fmtDate(lead.tenderReturn)],['Documents',lead.files.length?lead.files.length+' attached':'None yet']],
@@ -778,56 +738,6 @@ function renderFiles(kind){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const[k,i]=b.dataset.rm.split(':');const f=state.files[k].splice(+i,1)[0];if(f&&f.url)URL.revokeObjectURL(f.url);renderFiles(k)});
 wireUpload('domestic');wireUpload('commercial');
 
-/* ---------- Team view ---------- */
-const STATUSES=['New','Contacted','Survey booked','Quote sent','Won','Lost'];
-function renderAdmin(){
-  const leads=loadLeads();
-  const open=leads.filter(l=>!['Won','Lost'].includes(l.status)).length;
-  const pipe=leads.filter(l=>l.estimate&&!['Lost'].includes(l.status)).reduce((a,l)=>a+(l.estimate[0]+l.estimate[1])/2,0);
-  $('#stats').innerHTML=`<div><b>${leads.length}</b>Total enquiries</div><div><b>${leads.filter(l=>l.status==='New').length}</b>Awaiting review</div><div><b>${open}</b>Open</div><div><b>${gbp(pipe)}</b>Domestic pipeline, midpoint</div><div><b>${leads.filter(l=>l.type==='commercial').length}</b>Tender enquiries</div>`;
-  if(!leads.length){$('#leadsWrap').innerHTML='<div class="empty"><h2>No enquiries yet</h2><p>Submit an estimate from the customer view, or load sample enquiries to see how the team would work with them.</p></div>';return}
-  $('#leadsWrap').innerHTML=`<table class="leads"><thead><tr><th>Reference</th><th>Received</th><th>Type</th><th>Customer</th><th>Project</th><th>Estimate</th><th>Stage</th><th>Status</th></tr></thead><tbody>${
-    leads.map((l,i)=>`<tr class="row" data-i="${i}" tabindex="0" aria-expanded="false"><td><strong>${esc(l.ref)}</strong></td><td>${new Date(l.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</td><td><span class="tag ${l.type==='commercial'?'com':''}">${l.type==='commercial'?'Commercial':'Home'}</span></td><td>${esc(l.name||'Not given yet')}<br><span class="hint">${esc(l.company||l.email)}</span></td><td>${esc(l.type==='commercial'?l.summary:l.service)}<br><span class="hint">${esc(l.type==='commercial'?l.service:l.summary)}</span></td><td>${l.estimate?gbp(l.estimate[0])+' to '+gbp(l.estimate[1]):'<span class="hint">To price</span>'}</td><td>${esc(l.stage)}</td><td><select data-status="${i}" aria-label="Status for ${esc(l.ref)}">${STATUSES.map(s=>`<option ${s===l.status?'selected':''}>${s}</option>`).join('')}</select></td></tr>
-    <tr class="detail" id="detail-${i}" hidden><td colspan="8"><dl class="summary">${detailRows(l)}</dl></td></tr>`).join('')}</tbody></table>`;
-}
-function detailRows(l){
-  const rows=[['Email',l.email],['Phone',l.phone||'Not given'],['Contact by',l.pref+(l.bestTime?', '+l.bestTime.toLowerCase():'')],['Site postcode',l.postcode]];
-  if(l.role)rows.push(['Role',l.role]);
-  if(l.timeline)rows.push(['Start',l.timeline]);
-  if(l.value)rows.push(['Package value',l.value]);
-  if(l.start)rows.push(['Expected start',l.start]);
-  if(l.tenderReturn)rows.push(['Tender return',l.tenderReturn]);
-  rows.push(['Files',l.files&&l.files.length?l.files.join(', '):'None']);
-  rows.push(['Notes',l.notes||'None']);
-  return rows.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('');
-}
-$('#leadsWrap').addEventListener('click',e=>{
-  if(e.target.closest('select'))return;
-  const row=e.target.closest('tr.row');if(!row)return;toggleRow(row);
-});
-$('#leadsWrap').addEventListener('keydown',e=>{const row=e.target.closest('tr.row');if(row&&(e.key==='Enter'||e.key===' ')&&!e.target.closest('select')){e.preventDefault();toggleRow(row)}});
-function toggleRow(row){const d=document.getElementById('detail-'+row.dataset.i);d.hidden=!d.hidden;row.setAttribute('aria-expanded',!d.hidden)}
-$('#leadsWrap').addEventListener('change',e=>{const s=e.target.closest('[data-status]');if(!s)return;const l=loadLeads();l[+s.dataset.status].status=s.value;saveLeads(l);renderAdmin()});
-$('#clearAll').addEventListener('click',()=>{saveLeads([]);renderAdmin()});
-$('#loadSamples').addEventListener('click',()=>{
-  const now=Date.now(),d=h=>new Date(now-h*3600e3).toISOString();
-  const samples=[
-    {ref:'DC-26-K7M2Q',type:'domestic',stage:'Quote requested',status:'New',date:d(3),name:'Priya Shah',email:'priya.shah@example.com',phone:'07700 900123',pref:'Phone',bestTime:'Evening',service:'Driveway',summary:'Block paving, 36 m²',estimate:[4600,6750],postcode:'SE22 8HN',timeline:'Within 1 to 3 months',files:['front-drive.jpg','drive-side.jpg'],notes:'Manhole cover in the middle of the drive.'},
-    {ref:'DC-26-R3TXB',type:'commercial',stage:'Tender enquiry',status:'Contacted',date:d(26),name:'Tom Okafor',role:'Package manager',company:'Northfield Build Ltd',email:'t.okafor@example.com',phone:'020 7946 0321',pref:'Either',service:'Groundworks, Bellmouth access, Streetworks and reinstatement',summary:'Plot 4 residential access road',estimate:null,postcode:'E15 2GW',value:'£100k to £500k',start:'2026-11',tenderReturn:'2026-10-09',files:['GA-drawing-rev-C.pdf','BOQ-groundworks.xlsx'],notes:'Section 278 works, TM required.'},
-    {ref:'DC-26-9HPLD',type:'domestic',stage:'Estimate emailed',status:'New',date:d(30),name:'',email:'m.jones@example.com',phone:'',pref:'Email',service:'Dropped kerb',summary:'Single car, about 3 kerbs',estimate:[1200,2000],postcode:'CR0 6LB',timeline:'As soon as possible',files:[],notes:''},
-    {ref:'DC-26-2WQFE',type:'domestic',stage:'Quote requested',status:'Survey booked',date:d(72),name:'Grace Adeyemi',email:'grace.a@example.com',phone:'07700 900456',pref:'Email',service:'Patio',summary:'Porcelain slabs, 24 m²',estimate:[3600,5350],postcode:'N16 7PR',timeline:'In 3 to 6 months',files:['garden.heic'],notes:''}
-  ];
-  const l=loadLeads().filter(x=>!samples.some(s=>s.ref===x.ref));saveLeads([...samples,...l]);renderAdmin();
-});
-
-/* ---------- View switch ---------- */
-function setView(v){
-  $('#customer').hidden=v!=='customer';$('#admin').hidden=v!=='admin';
-  $('#viewCustomer').setAttribute('aria-pressed',v==='customer');$('#viewAdmin').setAttribute('aria-pressed',v==='admin');
-  if(v==='admin')renderAdmin();window.scrollTo({top:0});
-}
-$('#viewCustomer').addEventListener('click',()=>setView('customer'));
-$('#viewAdmin').addEventListener('click',()=>setView('admin'));
 })();
 </script>
 </body>
