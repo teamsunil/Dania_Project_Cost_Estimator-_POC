@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dania Construction | Project cost estimator (POC)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plum:#3F1766; --plum-2:#4B1A6E; --plum-deep:#2A0E47; --indigo:#3A2180;
+  --lilac:#A99BD0; --lilac-soft:#D9D1EE;
+  --bg:#F5F3F8; --surface:#FFFFFF; --ink:#1F1633; --muted:#5E5572; --line:#DCD6E6;
+  --soft:#EDE8F5; --btn:#3F1766; --btn-ink:#FFFFFF; --btn-hover:#2A0E47;
+  --ok:#1E6E48; --ok-bg:#E4F3EB; --warn:#8A5200; --warn-bg:#FBF0DC; --err:#B42318;
+  --focus:#7B5CC4;
+  --font:"Outfit", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#160A24; --surface:#211234; --ink:#F1EDF7; --muted:#B7ACCD; --line:#3B2B54;
+    --soft:#2C1A45; --btn:#BBA9EE; --btn-ink:#1A0D2B; --btn-hover:#D3C7F5;
+    --ok:#7FD4A6; --ok-bg:#16301F; --warn:#F2C27A; --warn-bg:#352511; --err:#FF8A7A; --focus:#BBA9EE;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#160A24; --surface:#211234; --ink:#F1EDF7; --muted:#B7ACCD; --line:#3B2B54;
+  --soft:#2C1A45; --btn:#BBA9EE; --btn-ink:#1A0D2B; --btn-hover:#D3C7F5;
+  --ok:#7FD4A6; --ok-bg:#16301F; --warn:#F2C27A; --warn-bg:#352511; --err:#FF8A7A; --focus:#BBA9EE;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+img{max-width:100%}
+h1,h2,h3{line-height:1.15;margin:0 0 .4em;font-weight:600}
+p{margin:0 0 1em}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Header */
+.bar{background:linear-gradient(95deg,var(--indigo) 0%,var(--plum-2) 55%,var(--plum) 100%);color:#fff}
+.bar-inner{max-width:1080px;margin:0 auto;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.logo{display:inline-block;border:3px solid var(--lilac);background:#471565;color:#fff;font-weight:500;font-size:30px;letter-spacing:.07em;padding:2px 20px 0;line-height:1.35;text-decoration:none}
+.views{display:flex;gap:4px;background:rgba(255,255,255,.1);padding:4px;border-radius:999px}
+.views button{font:inherit;font-size:15px;color:#fff;background:transparent;border:0;padding:8px 16px;border-radius:999px;cursor:pointer}
+.views button[aria-pressed="true"]{background:#fff;color:var(--plum)}
+
+/* Layout */
+main{max-width:1080px;margin:0 auto;padding:40px 24px 64px}
+.intro{display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:end;margin-bottom:36px}
+.intro h1{font-size:clamp(34px,5vw,52px);font-weight:600;letter-spacing:-.015em}
+.intro p{color:var(--muted);max-width:52ch;font-size:18px}
+.paths{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.path{font:inherit;color:inherit;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:6px;padding:20px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:border-color .15s}
+.path:hover{border-color:var(--lilac)}
+.path[aria-pressed="true"]{border-color:var(--btn);box-shadow:inset 0 0 0 1px var(--btn)}
+.path strong{font-size:20px;font-weight:600}
+.path span{color:var(--muted);font-size:15px}
+
+/* Wizard */
+.wizard{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.steps{list-style:none;margin:0;padding:0 12px;display:flex;gap:0;border-bottom:1px solid var(--line);overflow-x:auto}
+.steps li{display:flex;align-items:center;gap:8px;padding:16px 14px;font-size:15px;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-1px}
+.steps li .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);font-size:13px;font-weight:600}
+.steps li.done .n{background:var(--soft);border-color:var(--soft);color:var(--ink)}
+.steps li.current{color:var(--ink);border-bottom-color:var(--btn);font-weight:500}
+.steps li.current .n{background:var(--btn);border-color:var(--btn);color:var(--btn-ink)}
+.panel{padding:32px;display:none}
+.panel.active{display:block}
+.panel h2{font-size:28px}
+.panel .lede{color:var(--muted);max-width:60ch}
+.actions{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-top:28px;flex-wrap:wrap;padding-top:20px;border-top:1px solid var(--line)}
+.actions .right{display:flex;gap:12px;flex-wrap:wrap;margin-left:auto}
+
+.btn{font:inherit;font-size:16px;font-weight:500;border-radius:6px;padding:12px 22px;cursor:pointer;border:2px solid var(--btn);background:var(--btn);color:var(--btn-ink);transition:background .15s,border-color .15s}
+.btn:hover{background:var(--btn-hover);border-color:var(--btn-hover)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--lilac);background:transparent}
+.btn.link{background:none;border:0;padding:12px 4px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* Form controls */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px 24px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
+.field.full{grid-column:1/-1}
+label,.legend{font-weight:500;font-size:16px}
+.hint{font-size:14px;color:var(--muted);font-weight:400}
+input[type=text],input[type=email],input[type=tel],input[type=number],input[type=date],input[type=month],select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:6px;padding:11px 12px;width:100%}
+textarea{min-height:96px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--focus);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 25%,transparent)}
+.invalid input,.invalid select,.invalid textarea{border-color:var(--err)}
+.err{color:var(--err);font-size:14px;min-height:0}
+fieldset{border:0;padding:0;margin:0 0 4px;min-width:0}
+.unit-wrap{position:relative}
+.unit-wrap span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:20px}
+.tile{position:relative}
+.tile input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.tile label{display:flex;flex-direction:column;gap:4px;height:100%;padding:16px;border:1.5px solid var(--line);border-radius:6px;cursor:pointer;background:var(--bg);font-weight:400}
+.tile label strong{font-weight:600;font-size:17px}
+.tile label span{color:var(--muted);font-size:14px}
+.tile input:checked+label{border-color:var(--btn);box-shadow:inset 0 0 0 1px var(--btn);background:var(--soft)}
+.tile input:focus-visible+label{outline:3px solid var(--focus);outline-offset:2px}
+
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chip label{display:inline-block;padding:9px 14px;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;font-weight:400;font-size:15px;background:var(--bg)}
+.chip input:checked+label{border-color:var(--btn);background:var(--soft);font-weight:500}
+.chip input:focus-visible+label{outline:3px solid var(--focus);outline-offset:2px}
+
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:15px}
+.check input{width:18px;height:18px;margin-top:3px;accent-color:var(--btn);flex:none}
+
+.note{padding:12px 14px;border-radius:6px;font-size:15px;margin-top:8px}
+.note.ok{background:var(--ok-bg);color:var(--ok)}
+.note.warn{background:var(--warn-bg);color:var(--warn)}
+.note.info{background:var(--soft);color:var(--ink)}
+
+/* Upload */
+.drop{border:2px dashed var(--line);border-radius:8px;padding:32px;text-align:center;background:var(--bg);cursor:pointer;margin-top:16px}
+.drop.over{border-color:var(--btn);background:var(--soft)}
+.drop p{margin:.2em 0}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:16px}
+.file{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg);font-size:13px}
+.file .thumb{height:100px;display:grid;place-items:center;background:var(--soft);color:var(--muted);font-weight:600;font-size:15px}
+.file .thumb img{width:100%;height:100%;object-fit:cover}
+.file .meta{padding:8px;display:flex;justify-content:space-between;gap:6px;align-items:center}
+.file .meta span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file button{font:inherit;font-size:13px;background:none;border:0;color:var(--err);cursor:pointer;padding:2px}
+
+/* Estimate: the one bold moment, echoing the framed logo */
+.estimate{background:linear-gradient(120deg,var(--indigo),var(--plum) 70%);color:#fff;border-radius:8px;padding:32px;display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:center;margin-top:20px}
+.frame{border:3px solid var(--lilac);padding:18px 26px;background:rgba(40,10,70,.45)}
+.frame .lbl{font-size:15px;color:var(--lilac-soft)}
+.frame .range{font-size:clamp(34px,5.5vw,56px);font-weight:600;letter-spacing:-.01em;line-height:1.05;white-space:nowrap}
+.estimate .side p{margin:.3em 0;color:var(--lilac-soft)}
+.estimate .side strong{color:#fff;font-weight:500}
+.reveal .frame{animation:rise .5s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.reveal .frame{animation:none}}
+.breakdown{width:100%;border-collapse:collapse;margin-top:24px;font-size:16px}
+.breakdown td{padding:10px 0;border-bottom:1px solid var(--line)}
+.breakdown td:last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.breakdown tr.total td{font-weight:600;border-bottom:0}
+.email-inline{display:none;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:flex-start}
+.email-inline.open{display:flex}
+.email-inline .field{flex:1 1 260px}
+
+/* Confirmation */
+.ref{display:inline-block;border:3px solid var(--lilac);padding:8px 18px;font-size:24px;font-weight:600;letter-spacing:.04em;margin:8px 0 20px;background:var(--soft)}
+dl.summary{display:grid;grid-template-columns:max-content 1fr;gap:8px 24px;margin:0 0 24px;font-size:16px}
+dl.summary dt{color:var(--muted)}
+dl.summary dd{margin:0}
+ol.next{padding-left:1.3em;margin:0}
+ol.next li{margin-bottom:10px}
+ol.next li strong{font-weight:600}
+
+/* Team view */
+.admin-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.admin-head h1{font-size:36px}
+.admin-head p{color:var(--muted);margin:0}
+.stats{display:flex;gap:24px;margin:0 0 20px;flex-wrap:wrap;color:var(--muted);font-size:15px}
+.stats b{color:var(--ink);font-size:22px;font-weight:600;display:block}
+.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table.leads{width:100%;border-collapse:collapse;font-size:15px;min-width:760px}
+table.leads th{text-align:left;font-weight:500;color:var(--muted);padding:12px 14px;border-bottom:1px solid var(--line)}
+table.leads td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+table.leads tr.row{cursor:pointer}
+table.leads tr.row:hover td{background:var(--soft)}
+table.leads tr.detail td{background:var(--bg)}
+table.leads select{padding:6px 8px;font-size:14px;width:auto}
+.tag{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--soft)}
+.tag.com{background:var(--plum);color:#fff}
+.empty{padding:48px 24px;text-align:center}
+.empty p{color:var(--muted)}
+footer{max-width:1080px;margin:0 auto;padding:0 24px 40px;color:var(--muted);font-size:14px}
+
+@media (max-width:780px){
+  main{padding:28px 16px 48px}
+  .intro{grid-template-columns:1fr;gap:20px}
+  .paths{grid-template-columns:1fr}
+  .grid2{grid-template-columns:1fr}
+  .panel{padding:22px 18px}
+  .estimate{grid-template-columns:1fr;padding:22px;gap:18px}
+  .frame .range{white-space:normal}
+  .logo{font-size:24px;padding:1px 14px 0}
+  .actions .right{width:100%}
+  .actions .right .btn{flex:1}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-inner">
+    <a class="logo" href="https://daniaconstruction.com/" aria-label="Dania Construction home">DANIA</a>
+    <div class="views" role="group" aria-label="Switch view">
+      <button type="button" id="viewCustomer" aria-pressed="true">Get an estimate</button>
+      <button type="button" id="viewAdmin" aria-pressed="false">Team view</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ============ CUSTOMER VIEW ============ -->
+<section id="customer">
+  <div class="intro">
+    <div>
+      <h1>Price your project before you pick up the phone</h1>
+      <p>Get an indicative cost for a home project in about two minutes, or send your commercial tender details straight to our estimating team.</p>
+    </div>
+    <div class="paths" role="group" aria-label="Choose your project type">
+      <button type="button" class="path" data-flow="domestic" aria-pressed="false">
+        <strong>Home project</strong>
+        <span>Driveways, patios, paving, gardens, concrete bases and dropped kerbs. Instant cost range.</span>
+      </button>
+      <button type="button" class="path" data-flow="commercial" aria-pressed="false">
+        <strong>Commercial or tender</strong>
+        <span>Groundworks, RC slabs, streetworks, bellmouths. Send drawings and BOQs for pricing.</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="wizard" id="wizard" hidden>
+    <ol class="steps" id="steps" aria-label="Progress"></ol>
+
+    <!-- Domestic 1: service -->
+    <div class="panel" id="d-service">
+      <h2 tabindex="-1">What would you like done?</h2>
+      <p class="lede">Choose the closest match. You can tell us more on the next step.</p>
+      <div class="tiles" id="serviceTiles" role="radiogroup" aria-label="Service"></div>
+      <div class="err" id="err-service"></div>
+      <div class="actions"><button class="btn link" data-reset>Change project type</button><div class="right"><button class="btn" data-next="d-service">Continue</button></div></div>
+    </div>
+
+    <!-- Domestic 2: details -->
+    <div class="panel" id="d-details">
+      <h2 tabindex="-1">Tell us about the job</h2>
+      <p class="lede" id="detailsLede">Rough numbers are fine. We'll confirm everything on site.</p>
+      <div class="grid2">
+        <div class="field" id="f-area">
+          <label for="area">Area <span class="hint">in square metres</span></label>
+          <div class="unit-wrap"><input type="number" id="area" min="1" max="3000" inputmode="decimal" placeholder="e.g. 40"><span>m²</span></div>
+          <span class="hint">A single-car driveway is roughly 15 to 20 m². Length × width gives you the area.</span>
+          <div class="err"></div>
+        </div>
+        <div class="field" id="f-width" hidden>
+          <label for="kerbWidth">Opening width</label>
+          <select id="kerbWidth"></select>
+          <div class="err"></div>
+        </div>
+        <div class="field" id="f-material">
+          <label for="material" id="materialLabel">Surface or material</label>
+          <select id="material"></select>
+          <div class="err"></div>
+        </div>
+        <fieldset class="field full" id="f-condition">
+          <legend class="legend">What's on the site now?</legend>
+          <div class="choices">
+            <div class="chip"><input type="radio" name="condition" id="c-clear" value="clear"><label for="c-clear">Clear, level ground</label></div>
+            <div class="chip"><input type="radio" name="condition" id="c-remove" value="remove"><label for="c-remove">Existing surface to break out</label></div>
+            <div class="chip"><input type="radio" name="condition" id="c-hard" value="difficult"><label for="c-hard">Sloped or tight access</label></div>
+          </div>
+          <div class="err"></div>
+        </fieldset>
+        <fieldset class="field full" id="f-extras">
+          <legend class="legend">Anything extra? <span class="hint">optional</span></legend>
+          <div class="choices" id="extras"></div>
+        </fieldset>
+        <div class="field" id="f-postcode">
+          <label for="postcode">Site postcode</label>
+          <input type="text" id="postcode" autocomplete="postal-code" placeholder="e.g. SE15 4QL" maxlength="8">
+          <div id="pcNote" aria-live="polite"></div>
+          <div class="err"></div>
+        </div>
+        <div class="field" id="f-timeline">
+          <label for="timeline">When do you want to start?</label>
+          <select id="timeline">
+            <option value="">Choose one</option>
+            <option>As soon as possible</option>
+            <option>Within 1 to 3 months</option>
+            <option>In 3 to 6 months</option>
+            <option>Just planning for now</option>
+          </select>
+          <div class="err"></div>
+        </div>
+      </div>
+      <div class="actions"><button class="btn ghost" data-back>Back</button><div class="right"><button class="btn" data-next="d-details">Continue</button></div></div>
+    </div>
+
+    <!-- Domestic 3: photos -->
+    <div class="panel" id="d-photos">
+      <h2 tabindex="-1">Add photos or plans</h2>
+      <p class="lede">Optional. Photos help our team check your estimate faster, but they don't change the figure you'll see next.</p>
+      <div class="drop" data-drop="domestic" tabindex="0" role="button" aria-label="Upload photos or plans">
+        <p><strong>Drop files here or choose from your device</strong></p>
+        <p class="hint">JPG, PNG, HEIC or PDF, up to 10 MB each, 8 files max</p>
+      </div>
+      <input type="file" id="file-domestic" multiple accept="image/*,.pdf,.heic" hidden>
+      <div class="files" id="list-domestic"></div>
+      <div class="err" id="err-domestic"></div>
+      <div class="actions"><button class="btn ghost" data-back>Back</button><div class="right"><button class="btn" data-next="d-photos">See my estimate</button></div></div>
+    </div>
+
+    <!-- Domestic 4: estimate -->
+    <div class="panel" id="d-estimate">
+      <h2 tabindex="-1">Your indicative estimate</h2>
+      <p class="lede">Based on what you've told us and typical London prices.</p>
+      <div class="estimate" id="estBox">
+        <div class="frame"><div class="lbl" id="estLabel">Estimated cost</div><div class="range" id="estRange">£0</div></div>
+        <div class="side" id="estSide"></div>
+      </div>
+      <table class="breakdown" id="estTable" aria-label="Estimate breakdown"></table>
+      <div id="estNotes"></div>
+      <p class="hint" style="margin-top:14px">This is an indicative estimate only. Your final price depends on a site assessment of ground conditions, levels, drainage and access.</p>
+
+      <div class="email-inline" id="emailInline">
+        <div class="field"><label for="estEmail">Email address</label><input type="email" id="estEmail" autocomplete="email" placeholder="you@example.com"><div class="err"></div></div>
+        <button class="btn ghost" id="sendEstimate" style="margin-top:30px">Send estimate</button>
+      </div>
+      <div id="emailSent" aria-live="polite"></div>
+
+      <div class="actions">
+        <button class="btn ghost" data-back>Change details</button>
+        <div class="right">
+          <button class="btn ghost" id="openEmail">Email me this estimate</button>
+          <button class="btn" data-next="d-estimate">Request a detailed quote</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Domestic 5: contact -->
+    <div class="panel" id="d-contact">
+      <h2 tabindex="-1">Where should we send your quote?</h2>
+      <p class="lede">Our team reviews every request and replies within two working days.</p>
+      <div class="grid2" data-contact="d">
+        <div class="field"><label for="d-name">Full name</label><input type="text" id="d-name" autocomplete="name"><div class="err"></div></div>
+        <div class="field"><label for="d-company">Company <span class="hint">optional</span></label><input type="text" id="d-company" autocomplete="organization"></div>
+        <div class="field"><label for="d-email">Email</label><input type="email" id="d-email" autocomplete="email"><div class="err"></div></div>
+        <div class="field"><label for="d-phone">Phone <span class="hint" id="d-phoneHint">optional</span></label><input type="tel" id="d-phone" autocomplete="tel" placeholder="07..."><div class="err"></div></div>
+        <fieldset class="field">
+          <legend class="legend">How should we contact you?</legend>
+          <div class="choices">
+            <div class="chip"><input type="radio" name="d-pref" id="d-pe" value="Email" checked><label for="d-pe">Email</label></div>
+            <div class="chip"><input type="radio" name="d-pref" id="d-pp" value="Phone"><label for="d-pp">Phone</label></div>
+            <div class="chip"><input type="radio" name="d-pref" id="d-pa" value="Either"><label for="d-pa">Either</label></div>
+          </div>
+        </fieldset>
+        <div class="field"><label for="d-time">Best time to reach you <span class="hint">optional</span></label>
+          <select id="d-time"><option value="">Any time</option><option>Morning</option><option>Afternoon</option><option>Evening</option></select></div>
+        <div class="field full"><label for="d-notes">Anything else we should know? <span class="hint">optional</span></label><textarea id="d-notes" placeholder="Access, parking, manhole covers, trees, deadlines..."></textarea></div>
+        <div class="field full" id="f-d-consent">
+          <label class="check"><input type="checkbox" id="d-consent"><span>I agree that Dania Construction can store these details and contact me about this enquiry, as set out in the <a href="#" onclick="return false">privacy policy</a>.</span></label>
+          <div class="err"></div>
+        </div>
+      </div>
+      <div class="actions"><button class="btn ghost" data-back>Back</button><div class="right"><button class="btn" data-next="d-contact">Send quote request</button></div></div>
+    </div>
+
+    <!-- Commercial 1: project -->
+    <div class="panel" id="c-project">
+      <h2 tabindex="-1">About the project</h2>
+      <p class="lede">We price commercial work from your drawings and specification rather than a calculator, so no estimate is shown. Tell us what you need.</p>
+      <div class="grid2">
+        <div class="field" id="f-c-company"><label for="c-company">Company</label><input type="text" id="c-company" autocomplete="organization"><div class="err"></div></div>
+        <div class="field" id="f-c-project"><label for="c-projectName">Project name or reference</label><input type="text" id="c-projectName" placeholder="e.g. Plot 4 access road"><div class="err"></div></div>
+        <fieldset class="field full" id="f-c-works">
+          <legend class="legend">Works required <span class="hint">choose all that apply</span></legend>
+          <div class="choices" id="worksChoices"></div>
+          <div class="err"></div>
+        </fieldset>
+        <div class="field" id="f-c-postcode"><label for="c-postcode">Site postcode</label><input type="text" id="c-postcode" maxlength="8" placeholder="e.g. E14 5AB"><div id="cpcNote" aria-live="polite"></div><div class="err"></div></div>
+        <div class="field"><label for="c-value">Approximate package value <span class="hint">optional</span></label>
+          <select id="c-value"><option value="">Prefer not to say</option><option>Under £25k</option><option>£25k to £100k</option><option>£100k to £500k</option><option>Over £500k</option></select></div>
+        <div class="field"><label for="c-start">Expected start</label><input type="month" id="c-start"></div>
+        <div class="field"><label for="c-return">Tender return date <span class="hint">if applicable</span></label><input type="date" id="c-return"></div>
+        <div class="field full"><label for="c-scope">Scope summary <span class="hint">optional</span></label><textarea id="c-scope" placeholder="Quantities, programme constraints, traffic management, permit status..."></textarea></div>
+      </div>
+      <div class="actions"><button class="btn link" data-reset>Change project type</button><div class="right"><button class="btn" data-next="c-project">Continue</button></div></div>
+    </div>
+
+    <!-- Commercial 2: documents -->
+    <div class="panel" id="c-docs">
+      <h2 tabindex="-1">Tender documents</h2>
+      <p class="lede">Drawings, bill of quantities, specification or site photos. Optional here, but we'll need them before we can price.</p>
+      <div class="drop" data-drop="commercial" tabindex="0" role="button" aria-label="Upload tender documents">
+        <p><strong>Drop files here or choose from your device</strong></p>
+        <p class="hint">PDF, DWG, XLSX, DOCX or images, up to 10 MB each, 8 files max</p>
+      </div>
+      <input type="file" id="file-commercial" multiple accept="image/*,.pdf,.dwg,.dxf,.xlsx,.xls,.docx,.doc,.zip" hidden>
+      <div class="files" id="list-commercial"></div>
+      <div class="err" id="err-commercial"></div>
+      <div class="actions"><button class="btn ghost" data-back>Back</button><div class="right"><button class="btn" data-next="c-docs">Continue</button></div></div>
+    </div>
+
+    <!-- Commercial 3: contact -->
+    <div class="panel" id="c-contact">
+      <h2 tabindex="-1">Who should our estimator speak to?</h2>
+      <p class="lede">We acknowledge tender enquiries within one working day.</p>
+      <div class="grid2" data-contact="c">
+        <div class="field"><label for="c-name">Full name</label><input type="text" id="c-name" autocomplete="name"><div class="err"></div></div>
+        <div class="field"><label for="c-role">Role <span class="hint">optional</span></label><input type="text" id="c-role" placeholder="e.g. Package manager"></div>
+        <div class="field"><label for="c-email">Work email</label><input type="email" id="c-email" autocomplete="email"><div class="err"></div></div>
+        <div class="field"><label for="c-phone">Phone <span class="hint" id="c-phoneHint">optional</span></label><input type="tel" id="c-phone" autocomplete="tel"><div class="err"></div></div>
+        <fieldset class="field full">
+          <legend class="legend">How should we contact you?</legend>
+          <div class="choices">
+            <div class="chip"><input type="radio" name="c-pref" id="c-pe" value="Email" checked><label for="c-pe">Email</label></div>
+            <div class="chip"><input type="radio" name="c-pref" id="c-pp" value="Phone"><label for="c-pp">Phone</label></div>
+            <div class="chip"><input type="radio" name="c-pref" id="c-pa" value="Either"><label for="c-pa">Either</label></div>
+          </div>
+        </fieldset>
+        <div class="field full" id="f-c-consent">
+          <label class="check"><input type="checkbox" id="c-consent"><span>I agree that Dania Construction can store these details and contact me about this enquiry, as set out in the <a href="#" onclick="return false">privacy policy</a>.</span></label>
+          <div class="err"></div>
+        </div>
+      </div>
+      <div class="actions"><button class="btn ghost" data-back>Back</button><div class="right"><button class="btn" data-next="c-contact">Send enquiry</button></div></div>
+    </div>
+
+    <!-- Shared: done -->
+    <div class="panel" id="done">
+      <h2 tabindex="-1" id="doneTitle">Quote request received</h2>
+      <p class="lede" id="doneLede"></p>
+      <div>Your reference</div>
+      <div class="ref" id="doneRef"></div>
+      <dl class="summary" id="doneSummary"></dl>
+      <h3>What happens next</h3>
+      <ol class="next" id="doneNext"></ol>
+      <div class="actions"><span class="hint">A copy has been sent to <strong id="doneEmail"></strong>.</span><div class="right"><button class="btn ghost" data-reset>Start a new enquiry</button></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEAM VIEW ============ -->
+<section id="admin" hidden>
+  <div class="admin-head">
+    <div>
+      <h1>Enquiries</h1>
+      <p>Every estimate and quote request lands here with the details the team needs.</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn ghost" id="loadSamples">Load sample enquiries</button>
+      <button class="btn ghost" id="clearAll">Clear demo data</button>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="table-wrap" id="leadsWrap"></div>
+</section>
+</main>
+
+<footer>Proof of concept prepared for Dania Construction. Rates, service area, response times and wording are placeholders for Dania to confirm. In this demo, enquiries are saved only in your browser and no emails are sent.</footer>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+/* ---------- Placeholder pricing (GBP per m², incl. VAT) ---------- */
+const SERVICES={
+  driveway:{label:'Driveway',desc:'New or replacement driveway',unit:'area',rate:20,
+    materials:{block:['Block paving',90,140],resin:['Resin bound',80,130],tarmac:['Tarmac',60,100],concrete:['Plain concrete',60,95],imprinted:['Imprinted concrete',85,120],gravel:['Gravel with stabilising grid',45,75]},
+    extras:['drainage','edging']},
+  patio:{label:'Patio',desc:'Garden patio or seating area',unit:'area',rate:15,
+    materials:{porcelain:['Porcelain slabs',120,180],sandstone:['Natural sandstone',100,160],slabs:['Concrete slabs',70,110]},
+    extras:['drainage','edging']},
+  path:{label:'Paths and paving',desc:'Footpaths, side returns, courtyards',unit:'area',rate:20,
+    materials:{block:['Block paving',85,130],slabs:['Paving slabs',75,120],resin:['Resin bound',80,125],bonded:['Resin bonded',60,95]},
+    extras:['drainage','edging']},
+  garden:{label:'Garden landscaping',desc:'Turf, planting beds, soft landscaping',unit:'area',rate:40,
+    materials:{turf:['New turf',25,45],planting:['Planting beds',45,85],mixed:['Turf and planting',35,65]},
+    extras:['edging']},
+  slab:{label:'Concrete base or slab',desc:'For garages, outbuildings, sheds',unit:'area',rate:25,
+    materials:{s100:['100 mm base',60,90],s150:['150 mm reinforced slab',85,125],s200:['200 mm reinforced slab',110,160]},
+    extras:[]},
+  kerb:{label:'Dropped kerb',desc:'Vehicle crossover from the road',unit:'job',
+    widths:{single:['Single car, about 3 kerbs',1200,2000],double:['Two cars, about 5 kerbs',1800,2900],wide:['Wider opening, 6 or more kerbs',2600,4200]},
+    extras:['verge']}
+};
+const EXTRAS={
+  drainage:{label:'New drainage or soakaway',range:[600,1500]},
+  edging:{label:'New edging or kerbs around the edge',perM:[20,35]},
+  verge:{label:'There is a grass verge to cross',range:[400,900]}
+};
+const MIN_JOB=950;
+const WORKS=['Groundworks','Reinforced concrete slabs','Streetworks and reinstatement','Bellmouth access','Footpath crossovers','Hard landscaping','Soft landscaping','Drainage'];
+const LONDON=['E','EC','N','NW','SE','SW','W','WC','BR','CR','DA','EN','HA','IG','KT','RM','SM','TW','UB','WD'];
+const NEARBY=['AL','CM','SS','GU','RH','SL','HP','LU','SG','ME','TN','RG'];
+
+/* ---------- State ---------- */
+const FLOWS={
+  domestic:{panels:['d-service','d-details','d-photos','d-estimate','d-contact','done'],labels:['Service','Details','Photos','Estimate','Your details','Done']},
+  commercial:{panels:['c-project','c-docs','c-contact','done'],labels:['Project','Documents','Your details','Done']}
+};
+let state;
+function resetState(){state={flow:null,step:0,files:{domestic:[],commercial:[]},est:null,emailLeadRef:null}}
+resetState();
+
+/* ---------- Storage (per browser, demo only) ---------- */
+const KEY='dania-enquiries-v1';
+function loadLeads(){try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):[]}catch(e){return []}}
+function saveLeads(l){try{localStorage.setItem(KEY,JSON.stringify(l))}catch(e){}}
+function addLead(lead){const l=loadLeads();l.unshift(lead);saveLeads(l)}
+
+/* ---------- Helpers ---------- */
+const gbp=n=>'£'+Math.round(n).toLocaleString('en-GB');
+const r50=n=>Math.round(n/50)*50;
+function makeRef(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=c[Math.floor(Math.random()*c.length)];return 'DC-'+String(new Date().getFullYear()).slice(2)+'-'+s}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function setErr(fieldEl,msg){if(!fieldEl)return;const e=fieldEl.querySelector('.err');if(e)e.textContent=msg||'';fieldEl.classList.toggle('invalid',!!msg)}
+function fieldOf(id){return document.getElementById(id).closest('.field')}
+const emailOk=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+const phoneOk=v=>v.replace(/[^\d+]/g,'').length>=10;
+function checkPostcode(v){
+  const pc=v.toUpperCase().replace(/\s+/g,'');
+  if(!/^[A-Z]{1,2}\d[A-Z\d]?(\d[A-Z]{2})?$/.test(pc))return {valid:false};
+  const area=pc.match(/^[A-Z]{1,2}/)[0];
+  if(LONDON.includes(area))return {valid:true,zone:'london',area};
+  if(NEARBY.includes(area))return {valid:true,zone:'nearby',area};
+  return {valid:true,zone:'outside',area};
+}
+function pcMessage(res){
+  if(!res.valid)return '';
+  if(res.zone==='london')return '<div class="note ok">Good news, we cover this area.</div>';
+  if(res.zone==='nearby')return '<div class="note ok">We cover this area. Travel may add a little to larger quotes.</div>';
+  return '<div class="note warn">This is outside our usual area. You can still send your enquiry and we\'ll let you know if we can help.</div>';
+}
+
+/* ---------- Build dynamic UI ---------- */
+$('#serviceTiles').innerHTML=Object.entries(SERVICES).map(([k,s])=>`<div class="tile"><input type="radio" name="service" id="s-${k}" value="${k}"><label for="s-${k}"><strong>${s.label}</strong><span>${s.desc}</span></label></div>`).join('');
+$('#worksChoices').innerHTML=WORKS.map((w,i)=>`<div class="chip"><input type="checkbox" id="w${i}" value="${w}"><label for="w${i}">${w}</label></div>`).join('');
+
+function configureDetails(){
+  const key=document.querySelector('input[name=service]:checked')?.value; if(!key)return;
+  const s=SERVICES[key];
+  const isKerb=s.unit==='job';
+  $('#f-area').hidden=isKerb; $('#f-material').hidden=isKerb; $('#f-condition').hidden=isKerb; $('#f-width').hidden=!isKerb;
+  if(isKerb){
+    $('#kerbWidth').innerHTML='<option value="">Choose one</option>'+Object.entries(s.widths).map(([k,w])=>`<option value="${k}">${w[0]}</option>`).join('');
+    $('#detailsLede').textContent='Tell us roughly how wide the opening needs to be.';
+  }else{
+    const cur=$('#material').value;
+    $('#material').innerHTML='<option value="">Choose one</option>'+Object.entries(s.materials).map(([k,m])=>`<option value="${k}">${m[0]}</option>`).join('');
+    if(s.materials[cur])$('#material').value=cur;
+    $('#materialLabel').textContent=key==='slab'?'Slab type':key==='garden'?'Type of landscaping':'Surface or material';
+    $('#detailsLede').textContent='Rough numbers are fine. We\'ll confirm everything on site.';
+  }
+  $('#f-extras').hidden=!s.extras.length;
+  $('#extras').innerHTML=s.extras.map(x=>`<div class="chip"><input type="checkbox" id="x-${x}" value="${x}"><label for="x-${x}">${EXTRAS[x].label}</label></div>`).join('');
+}
+$('#serviceTiles').addEventListener('change',()=>{setErr($('#serviceTiles').parentElement,'');$('#err-service').textContent='';configureDetails()});
+
+['postcode','c-postcode'].forEach(id=>{
+  const el=document.getElementById(id), note=document.getElementById(id==='postcode'?'pcNote':'cpcNote');
+  el.addEventListener('input',()=>{const r=checkPostcode(el.value);note.innerHTML=el.value.trim().length>=2?pcMessage(r):'';if(r.valid)setErr(fieldOf(id),'')});
+  el.addEventListener('blur',()=>{el.value=el.value.trim().toUpperCase()});
+});
+['d','c'].forEach(p=>{
+  $$(`input[name=${p}-pref]`).forEach(r=>r.addEventListener('change',()=>{
+    const v=document.querySelector(`input[name=${p}-pref]:checked`).value;
+    document.getElementById(p+'-phoneHint').textContent=v==='Email'?'optional':'required';
+  }));
+});
+
+/* ---------- Navigation ---------- */
+function renderSteps(){
+  const f=FLOWS[state.flow];
+  $('#steps').innerHTML=f.labels.map((l,i)=>`<li class="${i<state.step?'done':i===state.step?'current':''}" ${i===state.step?'aria-current="step"':''}><span class="n">${i<state.step?'✓':i+1}</span>${l}</li>`).join('');
+}
+function show(step){
+  state.step=step;
+  const id=FLOWS[state.flow].panels[step];
+  $$('.panel').forEach(p=>p.classList.toggle('active',p.id===id));
+  renderSteps();
+  const w=$('#wizard'); const top=w.getBoundingClientRect().top+window.scrollY-16;
+  if(window.scrollY>top)window.scrollTo({top,behavior:'smooth'});
+  const h=document.getElementById(id).querySelector('h2'); if(h)h.focus({preventScroll:true});
+}
+function chooseFlow(flow){
+  resetState(); state.flow=flow;
+  $$('.path').forEach(b=>b.setAttribute('aria-pressed',b.dataset.flow===flow));
+  $('#wizard').hidden=false; show(0);
+  $('#wizard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$$('.path').forEach(b=>b.addEventListener('click',()=>chooseFlow(b.dataset.flow)));
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t)return;
+  if(t.hasAttribute('data-back')){show(Math.max(0,state.step-1))}
+  if(t.hasAttribute('data-reset')){clearForms();$('#wizard').hidden=true;$$('.path').forEach(b=>b.setAttribute('aria-pressed','false'));resetState();window.scrollTo({top:0,behavior:'smooth'})}
+  if(t.dataset.next){const ok=validators[t.dataset.next]?validators[t.dataset.next]():true;if(ok){if(after[t.dataset.next])after[t.dataset.next]();else show(state.step+1)}}
+});
+
+/* ---------- Validation ---------- */
+const validators={
+  'd-service'(){const ok=!!document.querySelector('input[name=service]:checked');$('#err-service').textContent=ok?'':'Choose a service to continue.';return ok},
+  'd-details'(){
+    const key=document.querySelector('input[name=service]:checked').value, s=SERVICES[key]; let ok=true;
+    if(s.unit==='area'){
+      const a=parseFloat($('#area').value);
+      if(!(a>=1&&a<=3000)){setErr($('#f-area'),'Enter an area between 1 and 3,000 m².');ok=false}else setErr($('#f-area'),'');
+      if(!$('#material').value){setErr($('#f-material'),'Choose an option.');ok=false}else setErr($('#f-material'),'');
+      if(!document.querySelector('input[name=condition]:checked')){setErr($('#f-condition'),'Tell us what\'s on the site now.');ok=false}else setErr($('#f-condition'),'');
+    }else{
+      if(!$('#kerbWidth').value){setErr($('#f-width'),'Choose an opening width.');ok=false}else setErr($('#f-width'),'');
+    }
+    if(!checkPostcode($('#postcode').value).valid){setErr($('#f-postcode'),'Enter a UK postcode, for example SE15 4QL.');ok=false}else setErr($('#f-postcode'),'');
+    if(!$('#timeline').value){setErr($('#f-timeline'),'Choose a start time.');ok=false}else setErr($('#f-timeline'),'');
+    if(!ok)focusFirstError('#d-details');
+    return ok;
+  },
+  'd-contact'(){return validateContact('d')},
+  'c-project'(){
+    let ok=true;
+    const req=[['c-company','Enter your company name.'],['c-projectName','Enter a project name or reference.']];
+    req.forEach(([id,m])=>{const v=document.getElementById(id).value.trim();setErr(fieldOf(id),v?'':m);if(!v)ok=false});
+    const works=$$('#worksChoices input:checked');
+    setErr($('#f-c-works'),works.length?'':'Choose at least one type of work.');if(!works.length)ok=false;
+    const pc=checkPostcode($('#c-postcode').value).valid;setErr($('#f-c-postcode'),pc?'':'Enter a UK postcode, for example E14 5AB.');if(!pc)ok=false;
+    if(!ok)focusFirstError('#c-project');
+    return ok;
+  },
+  'c-contact'(){return validateContact('c')}
+};
+function validateContact(p){
+  let ok=true;
+  const name=$(`#${p}-name`).value.trim(), email=$(`#${p}-email`).value.trim(), phone=$(`#${p}-phone`).value.trim();
+  const pref=document.querySelector(`input[name=${p}-pref]:checked`).value;
+  setErr(fieldOf(p+'-name'),name?'':'Enter your name.');if(!name)ok=false;
+  setErr(fieldOf(p+'-email'),emailOk(email)?'':'Enter an email address like name@example.com.');if(!emailOk(email))ok=false;
+  const needPhone=pref!=='Email';
+  const phoneErr=needPhone&&!phone?'Enter a phone number so we can call you.':(phone&&!phoneOk(phone)?'Enter a full phone number, including the area code.':'');
+  setErr(fieldOf(p+'-phone'),phoneErr);if(phoneErr)ok=false;
+  const c=$(`#${p}-consent`).checked;setErr($(`#f-${p}-consent`),c?'':'Tick the box so we can contact you about this enquiry.');if(!c)ok=false;
+  if(!ok)focusFirstError(`#${p}-contact`);
+  return ok;
+}
+function focusFirstError(panel){const f=document.querySelector(`${panel} .invalid input, ${panel} .invalid select, ${panel} .invalid textarea`);if(f)f.focus()}
+
+/* ---------- Estimate ---------- */
+function computeEstimate(){
+  const key=document.querySelector('input[name=service]:checked').value, s=SERVICES[key];
+  const extras=$$('#extras input:checked').map(i=>i.value);
+  const lines=[]; let lo=0,hi=0, desc, days, area=null, material=null, condition=null;
+  if(s.unit==='job'){
+    const w=s.widths[$('#kerbWidth').value];
+    lines.push([w[0],w[1],w[2]]); lo+=w[1];hi+=w[2]; desc=w[0]; days='1 to 2 days on site, after council approval';
+  }else{
+    area=parseFloat($('#area').value); const m=s.materials[$('#material').value]; material=m[0];
+    const bLo=area*m[1], bHi=area*m[2]; lines.push([`${m[0]}, ${area} m² supplied and laid`,bLo,bHi]); lo+=bLo;hi+=bHi;
+    condition=document.querySelector('input[name=condition]:checked').value;
+    if(condition==='remove'){const a=area*15,b=area*25;lines.push(['Break out and remove existing surface',a,b]);lo+=a;hi+=b}
+    if(condition==='difficult'){const a=lo*0.10,b=hi*0.20;lines.push(['Allowance for slope or restricted access',a,b]);lo+=a;hi+=b}
+    const dLo=Math.max(1,Math.ceil(area/s.rate)), dHi=Math.ceil(area/s.rate*1.5)+1;
+    days=`${dLo} to ${dHi} working days on site`; desc=`${m[0]}, ${area} m²`;
+  }
+  extras.forEach(x=>{const e=EXTRAS[x];let a,b;
+    if(e.perM){const per=Math.round(3*Math.sqrt(area));a=per*e.perM[0];b=per*e.perM[1];lines.push([`${e.label.replace(' around the edge','')}, about ${per} m`,a,b])}
+    else{a=e.range[0];b=e.range[1];lines.push([e.label.replace('There is a','Crossing a'),a,b])}
+    lo+=a;hi+=b;});
+  if(lo<MIN_JOB){lines.push(['Minimum job charge adjustment',MIN_JOB-lo,0]);lo=MIN_JOB;hi=Math.max(hi,MIN_JOB*1.3)}
+  lo=r50(lo);hi=r50(Math.max(hi,lo*1.15));
+  return {key,service:s.label,desc,lo,hi,days,lines,extras,area,material,condition,
+    postcode:$('#postcode').value.trim().toUpperCase(),zone:checkPostcode($('#postcode').value).zone,timeline:$('#timeline').value,
+    files:state.files.domestic.map(f=>f.name)};
+}
+function renderEstimate(){
+  const e=state.est=computeEstimate();
+  $('#estLabel').textContent=e.service+' estimate';
+  $('#estRange').textContent=`${gbp(e.lo)} to ${gbp(e.hi)}`;
+  $('#estSide').innerHTML=`<p><strong>${esc(e.desc)}</strong></p><p>${esc(e.days)}</p><p>Site ${esc(e.postcode)}, start ${esc(e.timeline.toLowerCase())}</p><p>Includes labour, materials, excavation, waste removal and VAT.</p>`;
+  $('#estTable').innerHTML=e.lines.map(l=>`<tr><td>${esc(l[0])}</td><td>${l[2]?gbp(r50(l[1]))+' to '+gbp(r50(l[2])):'+'+gbp(r50(l[1]))}</td></tr>`).join('')+`<tr class="total"><td>Indicative total</td><td>${gbp(e.lo)} to ${gbp(e.hi)}</td></tr>`;
+  let notes='';
+  if(e.key==='kerb')notes+='<div class="note info">Dropped kerbs need approval from your local council before work can start. The council\'s application and inspection fees are separate and set by each borough. We can help you apply.</div>';
+  if(e.zone==='outside')notes+='<div class="note warn">Your site is outside our usual area, so travel costs may apply. We\'ll confirm when we review your request.</div>';
+  if(state.files.domestic.length)notes+=`<div class="note info">We'll review your ${state.files.domestic.length} file${state.files.domestic.length>1?'s':''} with your quote request.</div>`;
+  $('#estNotes').innerHTML=notes;
+  const box=$('#estBox');box.classList.remove('reveal');void box.offsetWidth;box.classList.add('reveal');
+  $('#emailInline').classList.remove('open');$('#emailSent').innerHTML='';$('#openEmail').hidden=false;
+}
+
+/* email-only lead capture */
+$('#openEmail').addEventListener('click',()=>{$('#emailInline').classList.add('open');$('#estEmail').focus()});
+$('#sendEstimate').addEventListener('click',()=>{
+  const v=$('#estEmail').value.trim();
+  if(!emailOk(v)){setErr(fieldOf('estEmail'),'Enter an email address like name@example.com.');return}
+  setErr(fieldOf('estEmail'),'');
+  const ref=makeRef(); state.emailLeadRef=ref;
+  addLead({ref,type:'domestic',stage:'Estimate emailed',status:'New',date:new Date().toISOString(),name:'',email:v,phone:'',pref:'Email',
+    service:state.est.service,summary:state.est.desc,estimate:[state.est.lo,state.est.hi],postcode:state.est.postcode,timeline:state.est.timeline,files:state.est.files,notes:''});
+  $('#emailInline').classList.remove('open');$('#openEmail').hidden=true;
+  $('#emailSent').innerHTML=`<div class="note ok">Estimate sent to ${esc(v)}. It's valid for 30 days, and you can request a detailed quote any time using reference ${ref}.</div>`;
+  if(!$('#d-email').value)$('#d-email').value=v;
+});
+
+/* ---------- Submissions ---------- */
+const after={
+  'd-photos'(){renderEstimate();show(3)},
+  'd-contact'(){
+    const e=state.est, ref=state.emailLeadRef||makeRef();
+    const lead={ref,type:'domestic',stage:'Quote requested',status:'New',date:new Date().toISOString(),
+      name:$('#d-name').value.trim(),company:$('#d-company').value.trim(),email:$('#d-email').value.trim(),phone:$('#d-phone').value.trim(),
+      pref:document.querySelector('input[name=d-pref]:checked').value,bestTime:$('#d-time').value,
+      service:e.service,summary:e.desc,estimate:[e.lo,e.hi],postcode:e.postcode,timeline:e.timeline,files:e.files,notes:$('#d-notes').value.trim()};
+    const l=loadLeads().filter(x=>x.ref!==ref);l.unshift(lead);saveLeads(l);
+    renderDone(lead,[['Project',e.service],['Details',e.desc],['Site',e.postcode],['Start',e.timeline],['Indicative estimate',`${gbp(e.lo)} to ${gbp(e.hi)}`],['Files',e.files.length?e.files.length+' attached':'None'],['Contact by',lead.pref+(lead.bestTime?', '+lead.bestTime.toLowerCase():'')]],
+      ['<strong>Review.</strong> Our team checks your details and photos within two working days, and gets in touch if anything is unclear.',
+       `<strong>Site survey, if needed.</strong> We'll arrange a free visit to check levels, drainage and access.${e.key==='kerb'?' We can also help with your council application.':''}`,
+       '<strong>Detailed quote.</strong> You receive a formal, itemised quotation by email.',
+       '<strong>Book in.</strong> Once you approve the quote, we agree a start date and get to work.']);
+  },
+  'c-contact'(){
+    const works=$$('#worksChoices input:checked').map(i=>i.value), ref=makeRef();
+    const lead={ref,type:'commercial',stage:'Tender enquiry',status:'New',date:new Date().toISOString(),
+      name:$('#c-name').value.trim(),role:$('#c-role').value.trim(),company:$('#c-company').value.trim(),email:$('#c-email').value.trim(),phone:$('#c-phone').value.trim(),
+      pref:document.querySelector('input[name=c-pref]:checked').value,
+      service:works.join(', '),summary:$('#c-projectName').value.trim(),estimate:null,postcode:$('#c-postcode').value.trim().toUpperCase(),
+      value:$('#c-value').value,start:$('#c-start').value,tenderReturn:$('#c-return').value,files:state.files.commercial.map(f=>f.name),notes:$('#c-scope').value.trim()};
+    addLead(lead);
+    const fmtDate=d=>d?new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'Not given';
+    const fmtMonth=m=>m?new Date(m+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'}):'Not given';
+    renderDone(lead,[['Company',lead.company],['Project',lead.summary],['Works',lead.service],['Site',lead.postcode],['Package value',lead.value||'Not given'],['Expected start',fmtMonth(lead.start)],['Tender return',fmtDate(lead.tenderReturn)],['Documents',lead.files.length?lead.files.length+' attached':'None yet']],
+      ['<strong>Acknowledgement.</strong> Our estimating team confirms receipt within one working day.',
+       '<strong>Document review.</strong> We review drawings and the BOQ, and send any queries by email.',
+       '<strong>Site visit, if needed.</strong> We visit to assess ground conditions, access and traffic management.',
+       `<strong>Tender submission.</strong> We send our priced return${lead.tenderReturn?' before '+fmtDate(lead.tenderReturn):''}.`],
+      'Tender enquiry received');
+  }
+};
+function renderDone(lead,rows,steps,title){
+  $('#doneTitle').textContent=title||'Quote request received';
+  $('#doneLede').textContent=`Thanks${lead.name?', '+lead.name.split(' ')[0]:''}. Your enquiry has been sent to the Dania team.`;
+  $('#doneRef').textContent=lead.ref;
+  $('#doneSummary').innerHTML=rows.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('');
+  $('#doneNext').innerHTML=steps.map(s=>`<li>${s}</li>`).join('');
+  $('#doneEmail').textContent=lead.email;
+  show(FLOWS[state.flow].panels.length-1);
+}
+function clearForms(){
+  $$('#customer input[type=text],#customer input[type=email],#customer input[type=tel],#customer input[type=number],#customer input[type=date],#customer input[type=month],#customer textarea').forEach(i=>i.value='');
+  $$('#customer select').forEach(s=>s.selectedIndex=0);
+  $$('#customer input[type=checkbox],#customer input[name=service],#customer input[name=condition]').forEach(i=>i.checked=false);
+  ['d','c'].forEach(p=>{document.getElementById(p+'-pe').checked=true;document.getElementById(p+'-phoneHint').textContent='optional'});
+  $$('#customer .invalid').forEach(f=>f.classList.remove('invalid'));$$('#customer .err').forEach(e=>e.textContent='');
+  $('#pcNote').innerHTML='';$('#cpcNote').innerHTML='';
+  ['domestic','commercial'].forEach(k=>{state.files[k].forEach(f=>f.url&&URL.revokeObjectURL(f.url));$('#list-'+k).innerHTML=''});
+}
+
+/* ---------- Uploads (preview only) ---------- */
+function wireUpload(kind){
+  const drop=document.querySelector(`[data-drop=${kind}]`), input=document.getElementById('file-'+kind);
+  drop.addEventListener('click',()=>input.click());
+  drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click()}});
+  drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over')});
+  drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+  drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');addFiles(kind,e.dataTransfer.files)});
+  input.addEventListener('change',()=>{addFiles(kind,input.files);input.value=''});
+}
+function addFiles(kind,list){
+  const errs=[];
+  [...list].forEach(f=>{
+    if(state.files[kind].length>=8){errs.push('You can add up to 8 files.');return}
+    if(f.size>10*1024*1024){errs.push(`${f.name} is over 10 MB.`);return}
+    const isImg=f.type.startsWith('image/')&&!/heic/i.test(f.type);
+    state.files[kind].push({name:f.name,size:f.size,url:isImg?URL.createObjectURL(f):null,ext:(f.name.split('.').pop()||'').toUpperCase()});
+  });
+  document.getElementById('err-'+kind).textContent=[...new Set(errs)].join(' ');
+  renderFiles(kind);
+}
+function renderFiles(kind){
+  document.getElementById('list-'+kind).innerHTML=state.files[kind].map((f,i)=>`<div class="file"><div class="thumb">${f.url?`<img src="${f.url}" alt="">`:esc(f.ext)}</div><div class="meta"><span title="${esc(f.name)}">${esc(f.name)}</span><button type="button" data-rm="${kind}:${i}" aria-label="Remove ${esc(f.name)}">Remove</button></div></div>`).join('');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const[k,i]=b.dataset.rm.split(':');const f=state.files[k].splice(+i,1)[0];if(f&&f.url)URL.revokeObjectURL(f.url);renderFiles(k)});
+wireUpload('domestic');wireUpload('commercial');
+
+/* ---------- Team view ---------- */
+const STATUSES=['New','Contacted','Survey booked','Quote sent','Won','Lost'];
+function renderAdmin(){
+  const leads=loadLeads();
+  const open=leads.filter(l=>!['Won','Lost'].includes(l.status)).length;
+  const pipe=leads.filter(l=>l.estimate&&!['Lost'].includes(l.status)).reduce((a,l)=>a+(l.estimate[0]+l.estimate[1])/2,0);
+  $('#stats').innerHTML=`<div><b>${leads.length}</b>Total enquiries</div><div><b>${leads.filter(l=>l.status==='New').length}</b>Awaiting review</div><div><b>${open}</b>Open</div><div><b>${gbp(pipe)}</b>Domestic pipeline, midpoint</div><div><b>${leads.filter(l=>l.type==='commercial').length}</b>Tender enquiries</div>`;
+  if(!leads.length){$('#leadsWrap').innerHTML='<div class="empty"><h2>No enquiries yet</h2><p>Submit an estimate from the customer view, or load sample enquiries to see how the team would work with them.</p></div>';return}
+  $('#leadsWrap').innerHTML=`<table class="leads"><thead><tr><th>Reference</th><th>Received</th><th>Type</th><th>Customer</th><th>Project</th><th>Estimate</th><th>Stage</th><th>Status</th></tr></thead><tbody>${
+    leads.map((l,i)=>`<tr class="row" data-i="${i}" tabindex="0" aria-expanded="false"><td><strong>${esc(l.ref)}</strong></td><td>${new Date(l.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</td><td><span class="tag ${l.type==='commercial'?'com':''}">${l.type==='commercial'?'Commercial':'Home'}</span></td><td>${esc(l.name||'Not given yet')}<br><span class="hint">${esc(l.company||l.email)}</span></td><td>${esc(l.type==='commercial'?l.summary:l.service)}<br><span class="hint">${esc(l.type==='commercial'?l.service:l.summary)}</span></td><td>${l.estimate?gbp(l.estimate[0])+' to '+gbp(l.estimate[1]):'<span class="hint">To price</span>'}</td><td>${esc(l.stage)}</td><td><select data-status="${i}" aria-label="Status for ${esc(l.ref)}">${STATUSES.map(s=>`<option ${s===l.status?'selected':''}>${s}</option>`).join('')}</select></td></tr>
+    <tr class="detail" id="detail-${i}" hidden><td colspan="8"><dl class="summary">${detailRows(l)}</dl></td></tr>`).join('')}</tbody></table>`;
+}
+function detailRows(l){
+  const rows=[['Email',l.email],['Phone',l.phone||'Not given'],['Contact by',l.pref+(l.bestTime?', '+l.bestTime.toLowerCase():'')],['Site postcode',l.postcode]];
+  if(l.role)rows.push(['Role',l.role]);
+  if(l.timeline)rows.push(['Start',l.timeline]);
+  if(l.value)rows.push(['Package value',l.value]);
+  if(l.start)rows.push(['Expected start',l.start]);
+  if(l.tenderReturn)rows.push(['Tender return',l.tenderReturn]);
+  rows.push(['Files',l.files&&l.files.length?l.files.join(', '):'None']);
+  rows.push(['Notes',l.notes||'None']);
+  return rows.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('');
+}
+$('#leadsWrap').addEventListener('click',e=>{
+  if(e.target.closest('select'))return;
+  const row=e.target.closest('tr.row');if(!row)return;toggleRow(row);
+});
+$('#leadsWrap').addEventListener('keydown',e=>{const row=e.target.closest('tr.row');if(row&&(e.key==='Enter'||e.key===' ')&&!e.target.closest('select')){e.preventDefault();toggleRow(row)}});
+function toggleRow(row){const d=document.getElementById('detail-'+row.dataset.i);d.hidden=!d.hidden;row.setAttribute('aria-expanded',!d.hidden)}
+$('#leadsWrap').addEventListener('change',e=>{const s=e.target.closest('[data-status]');if(!s)return;const l=loadLeads();l[+s.dataset.status].status=s.value;saveLeads(l);renderAdmin()});
+$('#clearAll').addEventListener('click',()=>{saveLeads([]);renderAdmin()});
+$('#loadSamples').addEventListener('click',()=>{
+  const now=Date.now(),d=h=>new Date(now-h*3600e3).toISOString();
+  const samples=[
+    {ref:'DC-26-K7M2Q',type:'domestic',stage:'Quote requested',status:'New',date:d(3),name:'Priya Shah',email:'priya.shah@example.com',phone:'07700 900123',pref:'Phone',bestTime:'Evening',service:'Driveway',summary:'Block paving, 36 m²',estimate:[4600,6750],postcode:'SE22 8HN',timeline:'Within 1 to 3 months',files:['front-drive.jpg','drive-side.jpg'],notes:'Manhole cover in the middle of the drive.'},
+    {ref:'DC-26-R3TXB',type:'commercial',stage:'Tender enquiry',status:'Contacted',date:d(26),name:'Tom Okafor',role:'Package manager',company:'Northfield Build Ltd',email:'t.okafor@example.com',phone:'020 7946 0321',pref:'Either',service:'Groundworks, Bellmouth access, Streetworks and reinstatement',summary:'Plot 4 residential access road',estimate:null,postcode:'E15 2GW',value:'£100k to £500k',start:'2026-11',tenderReturn:'2026-10-09',files:['GA-drawing-rev-C.pdf','BOQ-groundworks.xlsx'],notes:'Section 278 works, TM required.'},
+    {ref:'DC-26-9HPLD',type:'domestic',stage:'Estimate emailed',status:'New',date:d(30),name:'',email:'m.jones@example.com',phone:'',pref:'Email',service:'Dropped kerb',summary:'Single car, about 3 kerbs',estimate:[1200,2000],postcode:'CR0 6LB',timeline:'As soon as possible',files:[],notes:''},
+    {ref:'DC-26-2WQFE',type:'domestic',stage:'Quote requested',status:'Survey booked',date:d(72),name:'Grace Adeyemi',email:'grace.a@example.com',phone:'07700 900456',pref:'Email',service:'Patio',summary:'Porcelain slabs, 24 m²',estimate:[3600,5350],postcode:'N16 7PR',timeline:'In 3 to 6 months',files:['garden.heic'],notes:''}
+  ];
+  const l=loadLeads().filter(x=>!samples.some(s=>s.ref===x.ref));saveLeads([...samples,...l]);renderAdmin();
+});
+
+/* ---------- View switch ---------- */
+function setView(v){
+  $('#customer').hidden=v!=='customer';$('#admin').hidden=v!=='admin';
+  $('#viewCustomer').setAttribute('aria-pressed',v==='customer');$('#viewAdmin').setAttribute('aria-pressed',v==='admin');
+  if(v==='admin')renderAdmin();window.scrollTo({top:0});
+}
+$('#viewCustomer').addEventListener('click',()=>setView('customer'));
+$('#viewAdmin').addEventListener('click',()=>setView('admin'));
+})();
+</script>
+</body>
+</html>
